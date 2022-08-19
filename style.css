@@ -2,6 +2,7 @@
 
 pre {
   line-height: 125%;
+  overflow: auto;
 }
 td.linenos .normal {
   color: inherit;
