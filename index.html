@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Clustering Algorithm | Suhaan Bhandary</title>
+    <meta name="description" content="KMean Clustering Algorithm Implementation - Suhaan Bhandary" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+
+    <!-- Load mathjax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML-full,Safe"></script>
+    <!-- MathJax configuration -->
+    <script src="./script.js"></script>
+    <!-- End of mathjax configuration -->
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body
+    class="jp-Notebook"
+    data-jp-theme-light="true"
+    data-jp-theme-name="JupyterLab Light"
+  >
+    <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+      <div class="jp-Cell-inputWrapper">
+        <div
+          class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser"
+        ></div>
+        <div class="jp-InputArea jp-Cell-inputArea">
+          <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+          <div
+            class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor"
+            data-type="inline"
+          >
+            <div class="CodeMirror cm-s-jupyter">
+              <div class="highlight hl-ipython3">
+                <pre><span></span><span class="kn">import</span> <span class="nn">math</span> 
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>  
+
+<span class="c1"># A problem to make cluster</span>
+<span class="k">def</span> <span class="nf">getDistance</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+<span class="c1"># Function to Extract x values</span>
+<span class="k">def</span> <span class="nf">getX</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+<span class="c1"># Function to Extract y values</span>
+<span class="k">def</span> <span class="nf">getY</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">y</span>
+
+<span class="c1"># Function to plot the clusturs on the graph</span>
+<span class="k">def</span> <span class="nf">plotPoints</span><span class="p">(</span><span class="n">clusters</span><span class="p">,</span> <span class="n">centroids</span><span class="p">,</span> <span class="n">xLabel</span><span class="p">,</span> <span class="n">yLabel</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">xLabel</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">yLabel</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">clusters</span><span class="p">)):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">clusters</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">getX</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">getY</span><span class="p">(</span><span class="n">data</span><span class="p">))</span> 
+        
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">centroids</span><span class="p">)):</span>
+        <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">centroids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">&quot;Centroid: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span> 
+
+<span class="c1"># Function to assign custerNumber to a point</span>
+<span class="k">def</span> <span class="nf">getClusterNumberToAssign</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">centroids</span><span class="p">):</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">centroids</span><span class="p">)</span>
+    <span class="c1"># print(x, y, centroids)</span>
+    
+    <span class="n">bestCluster</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">bestDistance</span> <span class="o">=</span> <span class="n">getDistance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">centroids</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">centroids</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">getDistance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">centroids</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">centroids</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># print(bestDistance, distance)</span>
+        <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="n">bestDistance</span><span class="p">:</span>
+            <span class="n">bestDistance</span> <span class="o">=</span> <span class="n">distance</span>
+            <span class="n">bestCluster</span> <span class="o">=</span> <span class="n">i</span>
+            
+    <span class="k">return</span> <span class="n">bestCluster</span>
+
+<span class="c1"># Function to create k clusters from the given data</span>
+<span class="k">def</span> <span class="nf">getClusters</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">clusterAssigned</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">clusters</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+        <span class="n">cluster</span> <span class="o">=</span> <span class="n">clusterAssigned</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">clusters</span><span class="p">[</span><span class="n">cluster</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        
+    <span class="k">return</span> <span class="n">clusters</span>
+
+<span class="c1"># K Mean Algorithm which takes data and centroids, and also the labels from x and y</span>
+<span class="k">def</span> <span class="nf">kMean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">centroids</span><span class="p">,</span> <span class="n">xLabel</span><span class="p">,</span> <span class="n">yLabel</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running kMean&quot;</span><span class="p">)</span>
+    
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">centroids</span><span class="p">)</span>   
+    
+    <span class="n">plotPoints</span><span class="p">([</span><span class="n">data</span><span class="p">],</span> <span class="n">centroids</span><span class="p">,</span><span class="n">xLabel</span><span class="p">,</span> <span class="n">yLabel</span><span class="p">)</span>
+    
+    <span class="n">clusterAssigned</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+    <span class="c1"># print(clusterAssigned)</span>
+    
+    <span class="c1"># Run the algorithm till no change happens</span>
+    <span class="n">iterationCount</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">iterationCount</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># print(&quot;Centroids:&quot;, centroids)</span>
+        
+        <span class="c1"># Run for only one iteration</span>
+        <span class="n">isChanged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+            <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">clusterId</span> <span class="o">=</span> <span class="n">getClusterNumberToAssign</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">centroids</span><span class="p">)</span>
+            <span class="c1"># print([x,y], &quot; =&gt; &quot;, clusterId)</span>
+            
+            <span class="k">if</span><span class="p">(</span><span class="n">clusterAssigned</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">clusterAssigned</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">clusterId</span><span class="p">):</span>
+                <span class="n">clusterAssigned</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusterId</span>
+                <span class="n">isChanged</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="c1"># If No Changes Break</span>
+        <span class="k">if</span> <span class="n">isChanged</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">break</span>
+        
+        <span class="c1"># Find the sum of every nodes</span>
+        <span class="n">clusterCount</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span>
+        <span class="n">clusterSumX</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span>
+        <span class="n">clusterSumY</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">clusterId</span> <span class="o">=</span> <span class="n">clusterAssigned</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            
+            <span class="n">clusterSumX</span><span class="p">[</span><span class="n">clusterId</span><span class="p">]</span> <span class="o">+=</span> <span class="n">x</span>
+            <span class="n">clusterSumY</span><span class="p">[</span><span class="n">clusterId</span><span class="p">]</span> <span class="o">+=</span> <span class="n">y</span>
+            <span class="n">clusterCount</span><span class="p">[</span><span class="n">clusterId</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="c1"># Assign the new Centroids</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">centroids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">clusterSumX</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">clusterCount</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">clusterSumY</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="n">clusterCount</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        
+        <span class="c1"># Find the new Centroids</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration:&quot;</span><span class="p">,</span> <span class="n">iterationCount</span><span class="p">)</span>
+        <span class="n">clusters</span> <span class="o">=</span> <span class="n">getClusters</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">clusterAssigned</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="n">plotPoints</span><span class="p">(</span><span class="n">clusters</span><span class="p">,</span> <span class="n">centroids</span><span class="p">,</span><span class="n">xLabel</span><span class="p">,</span> <span class="n">yLabel</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Program End&quot;</span><span class="p">)</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+      <div class="jp-Cell-inputWrapper">
+        <div
+          class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser"
+        ></div>
+        <div class="jp-InputArea jp-Cell-inputArea">
+          <div class="jp-InputPrompt jp-InputArea-prompt"></div>
+          <div
+            class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput"
+            data-mime-type="text/markdown"
+          >
+            <h1 id="Below-is-a-Example-of-Clustering-using-the-IPL-data">
+              Below is a Example of Clustering using the IPL data<a
+                class="anchor-link"
+                href="#Below-is-a-Example-of-Clustering-using-the-IPL-data"
+                >&#182;</a
+              >
+            </h1>
+            <p>In the below program we are grouping data in 4 Clusters</p>
+            <ul>
+              <li>Cluster 0: Batsman and also a Baller</li>
+              <li>Cluster 1: Batsman but not a Baller</li>
+              <li>Cluster 2: Not a Batsman but a Baller</li>
+              <li>Cluster 3: Not a Batsman nor a Baller</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+      <div class="jp-Cell-inputWrapper">
+        <div
+          class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser"
+        ></div>
+        <div class="jp-InputArea jp-Cell-inputArea">
+          <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+          <div
+            class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor"
+            data-type="inline"
+          >
+            <div class="CodeMirror cm-s-jupyter">
+              <div class="highlight hl-ipython3">
+                <pre><span></span><span class="c1"># Without Normalization</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">csvData</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;ipl_player_data_2021.csv&#39;</span><span class="p">);</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">names</span> <span class="o">=</span> <span class="n">csvData</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">innings</span> <span class="o">=</span> <span class="n">csvData</span><span class="p">[</span><span class="s1">&#39;Innings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">balls</span> <span class="o">=</span> <span class="n">csvData</span><span class="p">[</span><span class="s1">&#39;Balls&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="n">maxInnings</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">maxBalls</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># Get the sum of all the innings and balls</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)):</span>
+    <span class="n">maxInnings</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">innings</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">maxInnings</span><span class="p">)</span>
+    <span class="n">maxBalls</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">balls</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">maxBalls</span><span class="p">)</span>
+    
+    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">innings</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">balls</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+
+<span class="c1"># print(data)</span>
+<span class="c1"># Centroids: 1st for batters and second for ballers, thrid for average both, fourth allrounders</span>
+<span class="n">centroids</span> <span class="o">=</span> <span class="p">[[</span><span class="n">maxInnings</span><span class="p">,</span> <span class="n">maxBalls</span><span class="p">],[</span><span class="n">maxInnings</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="n">maxBalls</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span>
+<span class="n">kMean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">centroids</span><span class="p">,</span> <span class="s2">&quot;Innings&quot;</span><span class="p">,</span> <span class="s2">&quot;Balls&quot;</span><span class="p">)</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="jp-Cell-outputWrapper">
+        <div
+          class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser"
+        ></div>
+
+        <div class="jp-OutputArea jp-Cell-outputArea">
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Running kMean
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_2_1.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 1
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_2_3.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 2
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_2_5.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 3
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_2_7.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 4
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_2_9.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 5
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_2_11.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Program End
+</pre
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+      <div class="jp-Cell-inputWrapper">
+        <div
+          class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser"
+        ></div>
+        <div class="jp-InputArea jp-Cell-inputArea">
+          <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+          <div
+            class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor"
+            data-type="inline"
+          >
+            <div class="CodeMirror cm-s-jupyter">
+              <div class="highlight hl-ipython3">
+                <pre><span></span><span class="c1"># With Normalization using MinMax</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># We have to normalize the given data in the range of 0 to 100</span>
+<span class="k">def</span> <span class="nf">minMaxNormalize</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">new_min</span><span class="p">,</span> <span class="n">new_max</span><span class="p">):</span>
+    <span class="n">normalizedData</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="n">old_max</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">old_min</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">old_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">old_max</span><span class="p">)</span>
+        <span class="n">old_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">old_min</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">newValue</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span> <span class="o">-</span> <span class="n">old_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">old_max</span> <span class="o">-</span> <span class="n">old_min</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">new_max</span> <span class="o">-</span> <span class="n">new_min</span><span class="p">)</span> <span class="o">+</span> <span class="n">new_min</span>
+        <span class="n">normalizedData</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newValue</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">normalizedData</span>
+
+<span class="n">csvData</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;ipl_player_data_2021.csv&#39;</span><span class="p">);</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">names</span> <span class="o">=</span> <span class="n">csvData</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">innings</span> <span class="o">=</span> <span class="n">csvData</span><span class="p">[</span><span class="s1">&#39;Innings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">balls</span> <span class="o">=</span> <span class="n">csvData</span><span class="p">[</span><span class="s1">&#39;Balls&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="n">normalizedInnings</span> <span class="o">=</span> <span class="n">minMaxNormalize</span><span class="p">(</span><span class="n">innings</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">normalizedBalls</span> <span class="o">=</span> <span class="n">minMaxNormalize</span><span class="p">(</span><span class="n">balls</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># Get the sum of all the innings and balls</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)):</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">normalizedInnings</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">normalizedBalls</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+
+<span class="c1"># print(data)</span>
+<span class="n">centroids</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">],</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span>
+<span class="n">kMean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">centroids</span><span class="p">,</span><span class="s2">&quot;Innings&quot;</span><span class="p">,</span> <span class="s2">&quot;Balls&quot;</span><span class="p">)</span>
+</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="jp-Cell-outputWrapper">
+        <div
+          class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser"
+        ></div>
+
+        <div class="jp-OutputArea jp-Cell-outputArea">
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Running kMean
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_1.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 1
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_3.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 2
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_5.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 3
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_7.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 4
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_9.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 5
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_11.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 6
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_13.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 7
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_15.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 8
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_17.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 9
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_19.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 10
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_21.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Iteration: 11
+</pre
+              >
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div class="jp-RenderedImage jp-OutputArea-output">
+              <img
+                src="./assets/images/output_3_23.png"
+                class="jp-needs-light-background"
+              />
+            </div>
+          </div>
+
+          <div class="jp-OutputArea-child">
+            <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+            <div
+              class="jp-RenderedText jp-OutputArea-output"
+              data-mime-type="text/plain"
+            >
+              <pre>
+Program End
+</pre
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
