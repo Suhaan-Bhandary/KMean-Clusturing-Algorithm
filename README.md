@@ -16,3 +16,10 @@ To view the project Checkout Jupyter Notebook Webview here: [Jupyter Notebook We
 KMean              |  KMean with Normalization
 :-------------------------:|:-------------------------:
 ![KMean without Normalization](./assets/gifs/KMean_NotNormalized.gif)  |  ![KMean with Normalization](./assets/gifs/KMean_Normalized.gif)
+
+## Comparing the Algorithm with the SKLearn Library
+
+Data Passed| My Implementation Result              |  SKLearn Library Result
+:-------------------------:|:-------------------------:|:-------------------------:
+Regular Data|![Implementation Result on Regular Data](./assets/images/comparison/Implementation_DirectData.png)  |  ![SKLearn Result on Regular Data](./assets/images/comparison/SKLearn_DirectData.png)
+Normalized Data|![SKLearn Result on Normalized Data](./assets/images/comparison/Implementation_NormalizedData.png)  |  ![SKLearn Result on Normalized Data](./assets/images/comparison/SKLearn_NormalizedData.png)
